@@ -13,19 +13,20 @@
       background: #000;
       overflow: hidden;
     }
-    /* Fullscreen iframe */
+
     .iframe-container {
       position: relative;
       width: 100%;
       height: 100%;
     }
+
     iframe {
       width: 100%;
       height: 100%;
       border: none;
       display: block;
     }
-    /* Loader overlay */
+
     .loader-container {
       position: absolute;
       top: 0;
@@ -38,6 +39,7 @@
       background: radial-gradient(circle at center, #ff0000 0, #000000 60%);
       z-index: 999;
     }
+
     .loader {
       width: 80px;
       height: 80px;
@@ -46,6 +48,7 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -53,22 +56,27 @@
   </style>
 </head>
 <body>
+
   <!-- Loader -->
   <div class="loader-container" id="loader">
     <div class="loader"></div>
   </div>
-  <!-- Fullscreen iframe -->
+
+  <!-- STATIC IFRAME WITH SRC (EXTENSION-SAFE) -->
   <div class="iframe-container">
-    <iframe id="mainFrame"></iframe>
+    <iframe 
+      id="mainFrame"
+      src="https://gim.villainsrule.xyz/join"
+      allowfullscreen>
+    </iframe>
   </div>
+
   <script>
     const redirectURL = "https://gim.villainsrule.xyz/join";
+
     let minLoadTimePassed = false;
-    let iframeLoaded = false;
 
     function tryHideLoader() {
-      // Hide loader as soon as the minimum time has passed,
-      // regardless of whether Padlet has fully loaded.
       if (minLoadTimePassed) {
         document.getElementById("loader").style.display = "none";
       }
@@ -94,38 +102,25 @@
       s.async = true;
       s.src = "https://rum.cronitor.io/script.js";
       document.head.appendChild(s);
+
       window.cronitor = window.cronitor || function() {
         (window.cronitor.q = window.cronitor.q || []).push(arguments);
       };
-      cronitor('config', { clientKey: 'e23a3fc6a0b3ef6d37ac9d3753162570' });
-    }
 
-    function loadIframe(url) {
-      const frame = document.getElementById("mainFrame");
-      frame.onload = () => {
-        iframeLoaded = true;
-        // We don't gate the loader on iframeLoaded anymore,
-        // so this just updates the flag.
-      };
-      frame.src = url;
-      // Minimum loader time: 1.75 seconds
-      setTimeout(() => {
-        minLoadTimePassed = true;
-        tryHideLoader();
-      }, 1750);
+      cronitor('config', { clientKey: 'b15d299fd61ddcab513a165c13c1313d' });
     }
 
     function start() {
       let cookieID = getCookie("userID");
+
       if (!cookieID) {
         cookieID = generateID();
         setCookie("userID", cookieID, 365);
       }
 
-      // If we're already on the personal HTML file, just load the iframe content
+      // If already on personal file, iframe is already loading via src
       if (window.location.pathname.endsWith(cookieID + ".html")) {
-        loadIframe(redirectURL);
-        return;
+        // nothing to do — iframe loads automatically
       }
 
       const pathParts = window.location.pathname.split("/");
@@ -138,6 +133,7 @@
       }
 
       const id = cookieID;
+
       loadCronitor();
       cronitor('ping', {
         monitor: 'user-id-' + id,
@@ -151,19 +147,20 @@
       fetch(filePath, { method: "HEAD" })
         .then(response => {
           if (response.ok) {
-            // Full redirect like before
             window.location.href = filePath;
-          } else {
-            // No personal file, just load Padlet in iframe
-            loadIframe(redirectURL);
           }
         })
-        .catch(() => {
-          loadIframe(redirectURL);
-        });
+        .catch(() => {});
+
+      // Loader hides after minimum time
+      setTimeout(() => {
+        minLoadTimePassed = true;
+        tryHideLoader();
+      }, 1750);
     }
 
     window.onload = start;
   </script>
+
 </body>
 </html>
