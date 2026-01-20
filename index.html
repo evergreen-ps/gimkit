@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rebel Gimkit</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .iframe-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .loader-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #ff0000 0, #000000 60%);
+      z-index: 999;
+    }
+
+    .loader {
+      width: 80px;
+      height: 80px;
+      border: 8px solid #ff0000;
+      border-top: 8px solid #000000;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* LOGIN BUTTON (hidden until loader disappears) */
+    .login-btn {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      background: #000;
+      color: #ff0000;
+      border: 2px solid #ff0000;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
+      border-radius: 4px;
+      z-index: 1000;
+      transition: 0.2s;
+      display: none; /* hidden initially */
+    }
+
+    .login-btn:hover {
+      background: #ff0000;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loader -->
+  <div class="loader-container" id="loader">
+    <div class="loader"></div>
+  </div>
+
+  <!-- STATIC IFRAME WITH SRC (EXTENSION-SAFE) -->
+  <div class="iframe-container">
+    <iframe 
+      id="mainFrame"
+      src="https://jubilant-pancake-jjv75wj9wwxghp6jr-6060.app.github.dev/join"
+      allowfullscreen>
+    </iframe>
+  </div>
+
+  <!-- LOGIN BUTTON -->
+  <a href="login.html" class="login-btn" id="loginBtn">Login</a>
+
+  <script>
+    const redirectURL = "https://jubilant-pancake-jjv75wj9wwxghp6jr-6060.app.github.dev/join";
+
+    let minLoadTimePassed = false;
+
+    function tryHideLoader() {
+      if (minLoadTimePassed) {
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("loginBtn").style.display = "block"; // show button
+      }
+    }
+
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+      document.cookie = name + "=" + value + ";expires=" + d.toUTCString() + ";path=/";
+    }
+
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+      return match ? match[2] : null;
+    }
+
+    function generateID() {
+      return Math.floor(Math.random() * 900000) + 100000;
+    }
+
+    function loadCronitor() {
+      const s = document.createElement('script');
+      s.async = true;
+      s.src = "https://rum.cronitor.io/script.js";
+      document.head.appendChild(s);
+
+      window.cronitor = window.cronitor || function() {
+        (window.cronitor.q = window.cronitor.q || []).push(arguments);
+      };
+
+      cronitor('config', { clientKey: 'b15d299fd61ddcab513a165c13c1313d' });
+    }
+
+    function start() {
+      let cookieID = getCookie("userID");
+
+      if (!cookieID) {
+        cookieID = generateID();
+        setCookie("userID", cookieID, 365);
+      }
+
+      if (window.location.pathname.endsWith(cookieID + ".html")) {}
+
+      const pathParts = window.location.pathname.split("/");
+      pathParts.pop();
+      const basePath = pathParts.join("/") || "/";
+      const expectedPath = (basePath.endsWith("/") ? basePath : basePath + "/") + cookieID;
+
+      if (window.location.pathname !== expectedPath) {
+        history.replaceState(null, "", expectedPath);
+      }
+
+      const id = cookieID;
+
+      loadCronitor();
+      cronitor('ping', {
+        monitor: 'user-id-' + id,
+        message: 'User ID: ' + id,
+        url: expectedPath
+      });
+
+      const dir = expectedPath.substring(0, expectedPath.lastIndexOf("/") + 1);
+      const filePath = dir + id + ".html";
+
+      fetch(filePath, { method: "HEAD" })
+        .then(response => {
+          if (response.ok) {
+            window.location.href = filePath;
+          }
+        })
+        .catch(() => {});
+
+      setTimeout(() => {
+        minLoadTimePassed = true;
+        tryHideLoader();
+      }, 1750);
+    }
+
+    window.onload = start;
+  </script>
+
+</body>
+</html>
