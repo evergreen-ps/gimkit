@@ -1,116 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Rebel Gimkit</title>
   <link rel="icon" type="image/png" href="favicon.png">
-    <style>
-        body {
-            background-color: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .rect-btn {
-            padding: 20px 40px;
-            font-size: 24px;
-            font-family: 'Arial Black', sans-serif;
-            color: white;
-            background-color: #000;
-            border: 3px solid #ff0000;
-            border-radius: 15px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow:
-                0 0 10px #ff0000,
-                0 0 20px rgba(255, 0, 0, 0.5),
-                inset 0 0 10px rgba(255, 0, 0, 0.3);
-            text-decoration: none; /* Important for <a> tag */
-        }
-        .rect-btn:hover {
-            background-color: #1a0000;
-            box-shadow:
-                0 0 20px #ff3333,
-                0 0 40px rgba(255, 51, 51, 0.8),
-                inset 0 0 20px rgba(255, 51, 51, 0.5);
-            transform: translateY(-5px);
-        }
-        .rect-btn:active {
-            transform: translateY(2px);
-            box-shadow:
-                0 0 10px #ff0000,
-                0 0 20px rgba(255, 0, 0, 0.5);
-        }
-        .rect-btn::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,0,0,0.4) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-        .rect-btn:hover::before {
-            opacity: 1;
-            animation: glowPulse 2s infinite;
-        }
-        @keyframes glowPulse {
-            0% { transform: translate(0,0) rotate(0deg); }
-            50% { transform: translate(10%,10%) rotate(180deg); }
-            100% { transform: translate(0,0) rotate(360deg); }
-        }
-    </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .iframe-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .loader-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #ff0000 0, #000000 60%);
+      z-index: 999;
+    }
+
+    .loader {
+      width: 80px;
+      height: 80px;
+      border: 8px solid #ff0000;
+      border-top: 8px solid #000000;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <button class="rect-btn" id="launch">Cloaked Gimkit Hacks</button>
+
+  <!-- Loader -->
+  <div class="loader-container" id="loader">
+    <div class="loader"></div>
+  </div>
+
+  <!-- STATIC IFRAME WITH SRC (EXTENSION-SAFE) -->
+  <div class="iframe-container">
+    <iframe 
+      id="mainFrame"
+      src="https://gimmicking-worker.orson-sander.workers.dev/"
+      allowfullscreen>
+    </iframe>
+  </div>
 
   <script>
-    // 🔗 New game link
-    const sandboxLink = "https://gimmicking.onrender.com/";
+    const redirectURL = "https://gimmicking-worker.orson-sander.workers.dev/";
 
-    // Extract a readable name from the link
-    const gameName = sandboxLink.split("/").filter(Boolean).pop().replace(/[-_]/g, " ");
+    let minLoadTimePassed = false;
 
-    document.getElementById('launch').addEventListener('click', () => {
-      const win = window.open('about:blank', '_blank');
-      win.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>${gameName}</title>
-          <style>
-            html, body {
-              margin: 0;
-              height: 100%;
-              overflow: hidden;
-              background: #000;
-            }
-            iframe {
-              border: none;
-              width: 100%;
-              height: 100%;
-            }
-          </style>
-        </head>
-        <body>
-          <iframe src="${sandboxLink}"
-                  allow="fullscreen; gamepad; pointer-lock"
-                  sandbox="allow-scripts allow-same-origin allow-pointer-lock">
-          </iframe>
-        </body>
-        </html>
-      `);
-      win.document.close();
-    });
+    function tryHideLoader() {
+      if (minLoadTimePassed) {
+        document.getElementById("loader").style.display = "none";
+        /* login button removed */
+      }
+    }
+
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+      document.cookie = name + "=" + value + ";expires=" + d.toUTCString() + ";path=/";
+    }
+
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+      return match ? match[2] : null;
+    }
+
+    function generateID() {
+      return Math.floor(Math.random() * 900000) + 100000;
+    }
+
+    function loadCronitor() {
+      const s = document.createElement('script');
+      s.async = true;
+      s.src = "https://rum.cronitor.io/script.js";
+      document.head.appendChild(s);
+
+      window.cronitor = window.cronitor || function() {
+        (window.cronitor.q = window.cronitor.q || []).push(arguments);
+      };
+
+      cronitor('config', { clientKey: 'cce3724a78ae7fa8985090059eaaefef' });
+    }
+
+    function start() {
+      let cookieID = getCookie("userID");
+
+      if (!cookieID) {
+        cookieID = generateID();
+        setCookie("userID", cookieID, 365);
+      }
+
+      if (window.location.pathname.endsWith(cookieID + ".html")) {}
+
+      const pathParts = window.location.pathname.split("/");
+      pathParts.pop();
+      const basePath = pathParts.join("/") || "/";
+      const expectedPath = (basePath.endsWith("/") ? basePath : basePath + "/") + cookieID;
+
+      if (window.location.pathname !== expectedPath) {
+        history.replaceState(null, "", expectedPath);
+      }
+
+      const id = cookieID;
+
+      loadCronitor();
+      cronitor('ping', {
+        monitor: 'user-id-' + id,
+        message: 'User ID: ' + id,
+        url: expectedPath
+      });
+
+      const dir = expectedPath.substring(0, expectedPath.lastIndexOf("/") + 1);
+      const filePath = dir + id + ".html";
+
+      fetch(filePath, { method: "HEAD" })
+        .then(response => {
+          if (response.ok) {
+            window.location.href = filePath;
+          }
+        })
+        .catch(() => {});
+
+      setTimeout(() => {
+        minLoadTimePassed = true;
+        tryHideLoader();
+      }, 1750);
+    }
+
+    window.onload = start;
   </script>
+
 </body>
 </html>
