@@ -53,29 +53,6 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-
-    /* LOGIN BUTTON (hidden until loader disappears) */
-    .login-btn {
-      position: fixed;
-      bottom: 12px;
-      right: 12px;
-      background: #000;
-      color: #ff0000;
-      border: 2px solid #ff0000;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-family: Arial, sans-serif;
-      cursor: pointer;
-      border-radius: 4px;
-      z-index: 1000;
-      transition: 0.2s;
-      display: none; /* hidden initially */
-    }
-
-    .login-btn:hover {
-      background: #ff0000;
-      color: #000;
-    }
   </style>
 </head>
 <body>
@@ -89,23 +66,20 @@
   <div class="iframe-container">
     <iframe 
       id="mainFrame"
-      src="https://gimmicking.onrender.com/"
+      src="https://gimmicking-worker.orson-sander.workers.dev/join"
       allowfullscreen>
     </iframe>
   </div>
 
-  <!-- LOGIN BUTTON -->
-  <a href="login.html" class="login-btn" id="loginBtn">Login</a>
-
   <script>
-    const redirectURL = "https://gimmicking.onrender.com/";
+    const redirectURL = "https://gimmicking-worker.orson-sander.workers.dev/join";
 
     let minLoadTimePassed = false;
 
     function tryHideLoader() {
       if (minLoadTimePassed) {
         document.getElementById("loader").style.display = "none";
-        document.getElementById("loginBtn").style.display = "block"; // show button
+        /* login button removed */
       }
     }
 
